@@ -32,6 +32,12 @@ export default function CadenceEditor({prefix="", type="", index=0, code = "", o
     if (!monaco) return
     configureCadence(monaco)
     console.log("theme", theme)
+     //disable search
+      monaco.editor.addKeybindingRule({
+          keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF,
+          command: null
+      });
+
     monaco.editor.defineTheme('cb', {
       base: `${theme === 'light' ? "vs" : "vs-dark"}`,
       inherit: true,
@@ -48,15 +54,22 @@ export default function CadenceEditor({prefix="", type="", index=0, code = "", o
     <Editor
       language="cadence"
       theme="cb"
-      className={cn("max-h-screen border rounded-lg overflow-hidden ", className)}
-      options={{ 
-        fontSize: 14,
-        padding: {
-          top: 16,
-          bottom: 16,
-        },
+      className={cn("border rounded-lg overflow-hidden ", className)}
+      options={{
+          fontSize: 14,
+          selectionHighlight: false,
+          padding: {
+              top: 16,
+              bottom: 16,
+            },
+          scrollBeyondLastLine: false,
+          minimap: { enabled: false },
+          scrollbar:{
+            alwaysConsumeMouseWheel: false,
+          },
       }}
       value={code}
+      height={(code.split('\n').length+3)*21}
       onChange={onChange}
       onMount={onChange ? setEditorReadOnly(false) : setEditorReadOnly(true)}
     />
