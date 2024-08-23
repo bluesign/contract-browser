@@ -11,6 +11,76 @@ function setEditorReadOnly(readOnly) {
   return (editor, monaco)=>{
     editor.updateOptions({ readOnly: readOnly })
     editor.updateOptions({ scrollBeyondLastLine: false });
+
+    // link handling
+    if (location.hash.substring(0,2)=="#L") {
+        var lines =location.hash.substring(2).split("-")
+        var startLine = parseInt(lines[0])
+        var endLine = startLine
+        if (lines.length==2){
+            endLine = parseInt(lines[1])
+        }
+        var line = parseInt(location.hash.substring(2))
+        if (line > 0) {
+            editor.createDecorationsCollection([
+                {
+                    range: new monaco.Range(startLine, 1, endLine, 1000),
+                    options: {inlineClassName: "lineLinkHighlight"},
+                },
+            ]);
+
+            const element = document.querySelector("div[data-mode-id='cadence']")
+            const rect = element.getBoundingClientRect() // get rects(width, height, top, etc)
+            const viewHeight = window.innerHeight;
+            window.scroll({
+                top: rect.top + line * 21 - viewHeight / 2,
+                behavior: 'smooth' // smooth scroll
+            });
+
+            editor.revealLine(line)
+        }
+    }
+
+      editor.addAction({
+          // An unique identifier of the contributed action.
+          id: "copy-link",
+
+          // A label of the action that will be presented to the user.
+          label: "Copy link",
+
+          // An optional array of keybindings for the action.
+          keybindings: [
+              monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10,
+              // chord
+              monaco.KeyMod.chord(
+                  monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
+                  monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM
+              ),
+          ],
+
+          // A precondition for this action.
+          precondition: null,
+
+          // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+          keybindingContext: null,
+
+          contextMenuGroupId: "navigation",
+
+          contextMenuOrder: 1.5,
+
+          run: function (ed) {
+              var sel = ed.getSelection()
+              location.hash = '#L' + sel.startLineNumber
+              if (sel.startLineNumber!=sel.endLineNumber){
+                  location.hash = location.hash + "-" + sel.endLineNumber
+              }
+              navigator.clipboard.writeText(location.toString());
+              window.location.reload()
+          },
+      });
+
+
+    //}, 1000);
   }
 }
 
@@ -30,7 +100,10 @@ export default function CadenceEditor({prefix="", type="", index=0, code = "", o
 
   useEffect(() => {
     if (!monaco) return
-    configureCadence(monaco)
+      //loadDocgen()
+
+
+      configureCadence(monaco)
     console.log("theme", theme)
      //disable search
       monaco.editor.addKeybindingRule({
@@ -47,7 +120,7 @@ export default function CadenceEditor({prefix="", type="", index=0, code = "", o
       rules: []
     });
     monaco.editor.setTheme('cb');
-    //loadDocgen()
+
   }, [monaco, theme]);
 
   return (

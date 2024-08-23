@@ -220,3 +220,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+
+
+.lineLinkHighlight {
+  background-color: #ff00003f;
+  width: 100%;
+  cursor: pointer;
+}
+
